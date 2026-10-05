@@ -1,0 +1,48 @@
+#!/bin/sh
+#
+# PROVIDE: immich
+# REQUIRE: LOGIN postgresql redis
+# KEYWORD: shutdown
+#
+# Add the following lines to /etc/rc.conf to enable Immich:
+#
+# immich_enable="YES"
+# immich_user="immich"                          # default: immich
+# immich_dir="/usr/local/immich"                # default: /usr/local/immich
+# immich_env_file="/usr/local/etc/immich.env"   # default: /usr/local/etc/immich.env
+
+. /etc/rc.subr
+
+name=immich
+rcvar=immich_enable
+
+load_rc_config $name
+
+: ${immich_enable:="NO"}
+: ${immich_user:="immich"}
+: ${immich_dir:="/usr/local/immich"}
+: ${immich_env_file:="/usr/local/etc/immich.env"}
+: ${immich_logfile:="/var/log/immich.log"}
+
+pidfile="/var/run/${name}.pid"
+child_pidfile="/var/run/${name}_child.pid"
+procname="/usr/sbin/daemon"
+command="/usr/sbin/daemon"
+command_args="-r -P ${pidfile} -p ${child_pidfile} -o ${immich_logfile} -u ${immich_user} \
+  /usr/bin/env NODE_ENV=production IMMICH_BUILD_DATA=${immich_dir}/build \
+  /usr/local/bin/node ${immich_dir}/server/dist/main.js"
+
+start_precmd="immich_precmd"
+
+immich_precmd()
+{
+  touch "${immich_logfile}"
+  chown "${immich_user}" "${immich_logfile}"
+  if [ -r "${immich_env_file}" ]; then
+    set -a
+    . "${immich_env_file}"
+    set +a
+  fi
+}
+
+run_rc_command "$1"

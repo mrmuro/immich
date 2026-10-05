@@ -28,3 +28,7 @@ vite.config.js.timestamp-*
 .devcontainer/.env*
 *.tsbuildinfo
 *.tsbuildInfo
+
+# FreeBSD cross-build (misc/freebsd/build.sh)
+.freebsd-build/
+immich-freebsd*.tar.gz
